@@ -1,2 +1,2 @@
 # EMEA-AI-Champions-Training
-Training Repo on GitHub
+We love learning --> Progress over perfection
