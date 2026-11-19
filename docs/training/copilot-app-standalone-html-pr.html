@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A practical, VS Code-free guide to creating a standalone HTML file and opening a pull request with the GitHub Copilot App.">
+  <title>Build a standalone HTML guide with Copilot App</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme = param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+    }
+    a {
+      color: var(--cp-link);
+      text-underline-offset: 3px;
+    }
+    a:hover {
+      text-decoration-thickness: 2px;
+    }
+    :focus-visible {
+      outline: 3px solid var(--cp-accent);
+      outline-offset: 3px;
+    }
+    .skip-link {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 8px 12px;
+      transform: translateY(-160%);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+    }
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+    .page-shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(24px, 5vw, 52px);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .eyebrow,
+    .step-kicker {
+      margin: 0 0 8px;
+      color: var(--cp-accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+    h1 {
+      max-width: 760px;
+      margin-bottom: 12px;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+    }
+    .hero-intro {
+      max-width: 720px;
+      margin-bottom: 24px;
+      color: var(--cp-text-muted);
+      font-size: 1.12rem;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 4px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      background: var(--cp-bg-elevated);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 24px;
+      align-items: start;
+      margin-top: 24px;
+    }
+    main {
+      min-width: 0;
+    }
+    .step-card,
+    .sidebar-card {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .step-card {
+      margin-bottom: 16px;
+      padding: clamp(20px, 3vw, 32px);
+      scroll-margin-top: 20px;
+    }
+    .step-heading {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+    .step-number {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 800;
+    }
+    .step-heading h2 {
+      margin: 0;
+      font-size: clamp(1.25rem, 3vw, 1.65rem);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    .step-heading .step-kicker {
+      margin-bottom: 4px;
+    }
+    .step-card p:last-child,
+    .step-card ul:last-child,
+    .step-card ol:last-child {
+      margin-bottom: 0;
+    }
+    .step-card li + li {
+      margin-top: 8px;
+    }
+    .step-card ol,
+    .step-card ul {
+      padding-left: 24px;
+    }
+    .callout {
+      margin: 16px 0;
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-left: 4px solid var(--cp-accent);
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+    }
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .safety {
+      border-left-color: var(--cp-danger);
+      background: var(--cp-surface-soft);
+    }
+    .prompt-example {
+      position: relative;
+      margin: 16px 0;
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+    .prompt-example p {
+      margin-bottom: 8px;
+      color: var(--cp-text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    pre {
+      overflow-x: auto;
+      margin: 0;
+      color: var(--cp-text);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .mini-card {
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .mini-card h3 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+    .mini-card p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+      font-size: 0.94rem;
+    }
+    code {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 0.9em;
+    }
+    aside {
+      position: sticky;
+      top: 16px;
+    }
+    .sidebar-card {
+      margin-bottom: 16px;
+      padding: 20px;
+    }
+    .sidebar-card h2 {
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+    }
+    .contents-list {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .contents-list a {
+      display: block;
+      padding: 8px;
+      border-radius: 0.625rem;
+      color: var(--cp-text);
+      text-decoration: none;
+    }
+    .contents-list a:hover,
+    .contents-list a:focus-visible {
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+    }
+    .progress-copy {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--cp-text-muted);
+      font-size: 0.9rem;
+    }
+    progress {
+      display: block;
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 999px;
+      background: var(--cp-surface-soft);
+      accent-color: var(--cp-accent);
+    }
+    progress::-webkit-progress-bar {
+      border-radius: 999px;
+      background: var(--cp-surface-soft);
+    }
+    progress::-webkit-progress-value {
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+    progress::-moz-progress-bar {
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .checklist label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      cursor: pointer;
+      font-size: 0.92rem;
+    }
+    .checklist input {
+      width: 18px;
+      height: 18px;
+      margin: 3px 0 0;
+      accent-color: var(--cp-accent);
+    }
+    .checklist-status {
+      min-height: 24px;
+      margin: 12px 0 0;
+      color: var(--cp-text-muted);
+      font-size: 0.85rem;
+    }
+    .footer-note {
+      margin: 24px 0 0;
+      color: var(--cp-text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        position: static;
+        grid-row: 1;
+      }
+      .contents-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 540px) {
+      .page-shell {
+        width: min(100% - 24px, 1120px);
+        padding: 12px 0 32px;
+      }
+      .contents-list,
+      .split {
+        grid-template-columns: 1fr;
+      }
+      .step-heading {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 8px;
+      }
+      .step-number {
+        width: 32px;
+        height: 32px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to tutorial</a>
+  <div class="page-shell">
+    <header class="hero">
+      <p class="eyebrow">A practical, no-VS-Code workflow</p>
+      <h1>Build a standalone HTML file with the Copilot App</h1>
+      <p class="hero-intro">Go from an idea in chat to a reviewed pull request. Keep the deliverable self-contained, inspect every change, and use the app's repository and pull-request workflow without opening VS Code.</p>
+      <div class="hero-meta" aria-label="What this guide covers">
+        <span class="tag">One HTML file</span>
+        <span class="tag">Feature branch</span>
+        <span class="tag">Reviewed pull request</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main id="main-content">
+        <section class="step-card" id="before-you-start" aria-labelledby="before-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">0</span>
+            <div>
+              <p class="step-kicker">Before you start</p>
+              <h2 id="before-title">Set a safe, clear scope</h2>
+            </div>
+          </div>
+          <p>Choose a small training deliverable such as a self-contained HTML explainer. Decide what it should teach, who will use it, and which constraints matter: a single file, no external assets or data, accessible controls, and a clear visual style.</p>
+          <div class="callout safety" role="note" aria-label="Confidentiality and data safety">
+            <strong>Safety: keep sensitive data out of training outputs</strong>
+            Use only synthetic or sample figures in public training examples. For Highly Confidential workbooks, process them only through authorized local workflows. Never attach, upload, stage, commit, publish, or share those workbooks—or any generated HTML or CSV containing their data. Do not bypass labels or access controls. A file being stored locally does not make it safe to commit or share.
+          </div>
+          <div class="split">
+            <div class="mini-card">
+              <h3>Local file use</h3>
+              <p>A file can stay on your machine for private review or authorized local processing. Treat its contents according to their classification.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Repository use</h3>
+              <p>Only add files that are approved for this repository and its audience. Review the exact diff before staging or committing.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="step-card" id="open-repository" aria-labelledby="open-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div>
+              <p class="step-kicker">Choose your workspace</p>
+              <h2 id="open-title">Open the training repository in Copilot App</h2>
+            </div>
+          </div>
+          <ol>
+            <li>Start the GitHub Copilot App and sign in to the account that has access to your training repository.</li>
+            <li>Open or select the repository using the app's repository/project picker. The entry point may be named differently across app versions; choose the option that opens an existing local repository or repository project.</li>
+            <li>Confirm the repository name and current branch shown for the workspace before asking Copilot to make changes. If you have not cloned it yet, use the app's supported clone/open flow.</li>
+          </ol>
+          <div class="callout">
+            <strong>No VS Code required</strong>
+            Keep the repository open in Copilot App. Use its chat, change review, file preview, and GitHub pull-request features where available. If a button or panel name differs, look for the equivalent repository, changes, or pull-request action in your app version.
+          </div>
+        </section>
+
+        <section class="step-card" id="describe-deliverable" aria-labelledby="describe-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div>
+              <p class="step-kicker">Ask for a focused change</p>
+              <h2 id="describe-title">Describe the HTML deliverable and its constraints</h2>
+            </div>
+          </div>
+          <p>Tell Copilot what to create, where it belongs, and how you will verify it. Ask for a single ordinary HTML file—not a generated project, build setup, or bundle. Mention the audience, accessibility needs, allowed content, and anything that must stay out of version control.</p>
+          <div class="prompt-example">
+            <p>Example prompt — replace bracketed text with non-sensitive details</p>
+            <pre>In this training repository, create one self-contained HTML tutorial at [approved repository path] for [audience and learning goal]. Use inline CSS and only the JavaScript needed for the requested interaction. Do not add a framework, package, build step, external asset, or external data. Use synthetic sample content only; do not include confidential source data. Keep it accessible and responsive. After editing, summarize the file and tell me how to preview it and inspect the complete diff. Do not commit or open a pull request yet.</pre>
+          </div>
+          <ul>
+            <li>Give an exact destination path or ask Copilot to recommend one based on the repository structure.</li>
+            <li>State the output format and boundaries: one HTML file, no framework or external dependencies, and no unrelated edits.</li>
+            <li>Have Copilot explain any assumptions before broadening the change. Review those assumptions rather than accepting them automatically.</li>
+          </ul>
+        </section>
+
+        <section class="step-card" id="review-changes" aria-labelledby="review-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div>
+              <p class="step-kicker">You are the reviewer</p>
+              <h2 id="review-title">Inspect the generated file and complete diff</h2>
+            </div>
+          </div>
+          <p>When Copilot is done, open the app's changes/diff view (or its equivalent) and inspect every changed file and hunk before accepting the result.</p>
+          <ul>
+            <li>Confirm the only intended addition or edit is the approved HTML file; investigate unexpected files, generated assets, or dependency changes.</li>
+            <li>Read the HTML, CSS, and JavaScript. Check that the page is self-contained, links and controls make sense, and no confidential or real business data appears.</li>
+            <li>Review deletions and context as well as additions. Ask Copilot for a specific correction if something is wrong, then inspect the updated diff again.</li>
+            <li>Do not stage or commit a file just because Copilot created it. The diff is the decision point for what enters the repository.</li>
+          </ul>
+        </section>
+
+        <section class="step-card" id="preview-check" aria-labelledby="preview-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div>
+              <p class="step-kicker">Check the actual page</p>
+              <h2 id="preview-title">Preview and verify the HTML</h2>
+            </div>
+          </div>
+          <p>Use the app's HTML/file preview if available, or open the approved local HTML file in a browser using the workspace's reveal/open-file action. The app UI may vary; if preview is unavailable, use another authorized local browser workflow and return to the app to review and commit.</p>
+          <ul>
+            <li>Check the page at a narrow and a wide viewport; confirm there is no clipped content or horizontal overflow.</li>
+            <li>Use keyboard navigation, verify visible focus, and make sure headings, links, labels, and interactive controls are understandable.</li>
+            <li>Try each interactive element and inspect the browser console if the local preview exposes it.</li>
+            <li>Keep previewing local distinct from sharing: opening a local file does not add it to Git, but a commit or PR can make its contents available to repository collaborators.</li>
+          </ul>
+          <div class="callout">
+            <strong>Not sure whether preview is local?</strong>
+            Check where the page opens and what data it loads. Do not upload sensitive inputs to get a preview; use only the authorized local workflow for that material.
+          </div>
+        </section>
+
+        <section class="step-card" id="feature-branch" aria-labelledby="branch-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">5</span>
+            <div>
+              <p class="step-kicker">Keep the work isolated</p>
+              <h2 id="branch-title">Create or confirm a feature branch</h2>
+            </div>
+          </div>
+          <p>Before committing, confirm the repository's base branch and put the tutorial change on a feature branch. Use the app's branch control or Git changes workflow; labels vary between versions.</p>
+          <ul>
+            <li>Choose a short name that describes the change, such as <code>training/html-copilot-guide</code>.</li>
+            <li>Verify the workspace is on that feature branch, not the default branch.</li>
+            <li>Check the final diff once more and stage only the intended, approved file. Leave unrelated or sensitive local files unstaged.</li>
+          </ul>
+        </section>
+
+        <section class="step-card" id="commit" aria-labelledby="commit-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">6</span>
+            <div>
+              <p class="step-kicker">Save the reviewed change</p>
+              <h2 id="commit-title">Commit to the feature branch</h2>
+            </div>
+          </div>
+          <p>Use the app's commit action in the repository changes view. Write a concise message that describes the tutorial, then confirm the commit target is your feature branch.</p>
+          <div class="callout">
+            <strong>Commit is not the same as keeping a local draft</strong>
+            A commit records the selected content in Git. Pushing the branch and opening a pull request shares it with the repository's review process. If you only need a local draft, do not stage, commit, or push it.
+          </div>
+        </section>
+
+        <section class="step-card" id="create-pr" aria-labelledby="pr-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">7</span>
+            <div>
+              <p class="step-kicker">Request review</p>
+              <h2 id="pr-title">Create and review the pull request</h2>
+            </div>
+          </div>
+          <ol>
+            <li>Push/publish the feature branch when prompted, then use the app's create-pull-request action or its equivalent.</li>
+            <li>Confirm the base is the repository's intended default branch and the compare branch is your feature branch.</li>
+            <li>Write a clear title and a short description of the tutorial, its audience, and what was checked. Include only safe, non-sensitive details.</li>
+            <li>Before creating, review the PR's changed-files list and summary. Confirm it contains only the intended HTML/documentation changes and no confidential content.</li>
+          </ol>
+          <p>If the app does not expose PR creation for this workspace, use its GitHub repository/pull-request handoff or the GitHub web interface; keep the same base/compare and diff checks.</p>
+        </section>
+
+        <section class="step-card" id="respond-to-feedback" aria-labelledby="feedback-title">
+          <div class="step-heading">
+            <span class="step-number" aria-hidden="true">8</span>
+            <div>
+              <p class="step-kicker">Finish the review loop</p>
+              <h2 id="feedback-title">Respond to CI and reviewer feedback</h2>
+            </div>
+          </div>
+          <ul>
+            <li>Check the PR's status checks and review comments in the app or on GitHub. If checks are pending, wait for their result before treating the PR as ready.</li>
+            <li>For a failure or comment, understand the requested change, make a focused fix on the same feature branch, and inspect the new diff.</li>
+            <li>Run the relevant checks again, commit and push the update, then reply to reviewers with what changed or why you disagree.</li>
+            <li>Confirm required approvals and checks are complete. Follow repository policy for merge; creating a PR does not mean it is approved or merged.</li>
+          </ul>
+        </section>
+
+        <p class="footer-note">Use your repository's contribution, data-handling, and review policies whenever they are stricter than this tutorial.</p>
+      </main>
+
+      <aside aria-label="Tutorial navigation and progress">
+        <nav class="sidebar-card" aria-labelledby="contents-title">
+          <h2 id="contents-title">On this page</h2>
+          <ol class="contents-list">
+            <li><a href="#before-you-start">Safety and scope</a></li>
+            <li><a href="#open-repository">1. Open repository</a></li>
+            <li><a href="#describe-deliverable">2. Describe the file</a></li>
+            <li><a href="#review-changes">3. Review the diff</a></li>
+            <li><a href="#preview-check">4. Preview and check</a></li>
+            <li><a href="#feature-branch">5. Feature branch</a></li>
+            <li><a href="#commit">6. Commit</a></li>
+            <li><a href="#create-pr">7. Create the PR</a></li>
+            <li><a href="#respond-to-feedback">8. Respond to feedback</a></li>
+          </ol>
+        </nav>
+        <section class="sidebar-card" aria-labelledby="progress-title">
+          <h2 id="progress-title">Your progress</h2>
+          <div class="progress-copy">
+            <span id="progress-label">0 of 8 steps checked</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <progress id="tutorial-progress" value="0" max="8" aria-labelledby="progress-title"></progress>
+          <p class="checklist-status" id="checklist-status" aria-live="polite">Use the checklist as you work. Your choices stay in this page only.</p>
+          <ul class="checklist">
+            <li><label><input type="checkbox" data-step-check><span>Opened the intended repository</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Defined the file and data boundaries</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Reviewed every change</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Previewed and checked the page</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Confirmed the feature branch</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Committed only approved files</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Reviewed the PR diff and target</span></label></li>
+            <li><label><input type="checkbox" data-step-check><span>Checked CI and review feedback</span></label></li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const checks = Array.from(document.querySelectorAll("[data-step-check]"));
+      const progress = document.getElementById("tutorial-progress");
+      const label = document.getElementById("progress-label");
+      const percent = document.getElementById("progress-percent");
+      const status = document.getElementById("checklist-status");
+
+      const updateProgress = () => {
+        const complete = checks.filter((check) => check.checked).length;
+        const rate = Math.round((complete / checks.length) * 100);
+        progress.value = complete;
+        label.textContent = `${complete} of ${checks.length} steps checked`;
+        percent.textContent = `${rate}%`;
+        status.textContent = complete === checks.length
+          ? "All steps checked. Confirm the repository's review and data-handling policies before merging."
+          : "Use the checklist as you work. Your choices stay in this page only.";
+      };
+
+      checks.forEach((check) => check.addEventListener("change", updateProgress));
+    })();
+  </script>
+</body>
+</html>
